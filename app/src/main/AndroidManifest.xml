@@ -2,6 +2,35 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permiso para usar la cámara -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Permisos para obtener la ubicación -->
+    <!-- Permiso para obtener la ubicación precisa -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Permiso para obtener la ubicación aproximada -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Permiso para ubicación en segundo plano (Android 10+) -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
+    <!-- Permiso para acceder a Internet (para consumo de APIs) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Permiso para notificaciones (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+<!--    &lt;!&ndash; Permiso para almacenamiento (opcional, para guardar fotos) &ndash;&gt;-->
+<!--    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />-->
+<!--    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />-->
+
+    <!-- Indica que la cámara y es obligatoria -->
+    <uses-feature android:name="android.hardware.camera" android:required="true"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="true"/>
+
+    <!-- Declarar que la aplicación necesita GPS (ubicación) -->
+    <uses-feature android:name="android.hardware.location.gps"/>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,12 +41,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Marcacion"
         tools:targetApi="31">
+        <meta-data
+            android:name="androidx.camera.lifecycle.ProcessCameraProvider"
+            android:value="androidx.camera.lifecycle.ProcessCameraProvider"/>
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
