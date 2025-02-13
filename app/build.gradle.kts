@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("kotlin-kapt") // Habilitar Kapt para Room
 }
 
 android {
@@ -46,6 +47,33 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-//    Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    // Retrofit para consumo de APIs
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+
+    // CameraX para captura de fotos
+    implementation(libs.camerax.core)
+    implementation(libs.camerax.camera2)
+    implementation(libs.camerax.lifecycle)
+    implementation(libs.camerax.view)
+
+    // Room (SQLite) para base de datos local
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    kapt(libs.room.compiler) // Importante para generar código Room
+
+    // Corrutinas para ejecución en segundo plano
+    implementation(libs.coroutines.android)
+
+    // WorkManager para sincronización en segundo plano
+    implementation(libs.workmanager)
+
+    // Geolocalización (FusedLocationProvider)
+    implementation(libs.play.services.location)
+
+    // Testing
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }
+
