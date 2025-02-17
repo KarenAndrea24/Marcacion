@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -66,4 +67,21 @@
 <!--        android:textStyle="bold"-->
 <!--        android:layout_marginTop="5dp"-->
 <!--        android:layout_gravity="center"/>-->
+
+    <RelativeLayout
+        android:id="@+id/login_rl_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#61000000"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true">
+
+        <ProgressBar
+            android:id="@+id/login_pb_loading"
+            android:layout_width="130dp"
+            android:layout_height="130dp" />
+
+    </RelativeLayout>
 </LinearLayout>

@@ -15,13 +15,14 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import android.provider.Settings
 import android.net.Uri
+import com.example.marcacion.data.service.LocationService
 
-class MainActivity : AppCompatActivity() {
+class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_login)
 
         // Ajustar insets para bordes
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -64,15 +65,21 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Debes habilitar los permisos manualmente en Configuración.", Toast.LENGTH_LONG).show()
                 openAppSettings()
             }
+        } else {
+            // Si todos los permisos ya fueron concedidos, iniciar la ubicación
+            iniciarServicioUbicacion()
         }
     }
 
+    // Callback para manejar la respuesta del usuario al solicitar permisos
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             val deniedPermissions = permissions.filterValues { !it }
 
             if (deniedPermissions.isNotEmpty()) {
                 Toast.makeText(this, "Algunos permisos fueron denegados.", Toast.LENGTH_SHORT).show()
+            } else {
+                iniciarServicioUbicacion()
             }
         }
 
@@ -81,5 +88,24 @@ class MainActivity : AppCompatActivity() {
             data = Uri.fromParts("package", packageName, null)
         }
         startActivity(intent)
+    }
+
+    private fun iniciarServicioUbicacion() {
+        val intent = Intent(this, LocationService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        detenerServicioUbicacion()
+    }
+
+    private fun detenerServicioUbicacion() {
+        val intent = Intent(this, LocationService::class.java)
+        stopService(intent)
     }
 }

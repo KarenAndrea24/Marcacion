@@ -11,6 +11,8 @@
     <!-- Permiso para obtener la ubicación aproximada -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <!-- Permiso para ubicación en segundo plano (Android 10+) -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
 
@@ -45,7 +47,7 @@
             android:name="androidx.camera.lifecycle.ProcessCameraProvider"
             android:value="androidx.camera.lifecycle.ProcessCameraProvider"/>
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.login.presenter.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

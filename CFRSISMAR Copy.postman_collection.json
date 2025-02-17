@@ -1,0 +1,112 @@
+{
+	"info": {
+		"_postman_id": "2b178a78-117c-4454-a645-e53291c6e2ab",
+		"name": "CFRSISMAR Copy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26130220"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"administrador@test.com\",\r\n    \"password\": \"administrador\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sm.smfoods.com.pe/api/web/login",
+					"protocol": "https",
+					"host": [
+						"sm",
+						"smfoods",
+						"com",
+						"pe"
+					],
+					"path": [
+						"api",
+						"web",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar DNI",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sm.smfoods.com.pe/api/web/marcaciones/12345678/dni",
+					"protocol": "https",
+					"host": [
+						"sm",
+						"smfoods",
+						"com",
+						"pe"
+					],
+					"path": [
+						"api",
+						"web",
+						"marcaciones",
+						"12345678",
+						"dni"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Crear macación",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id_user\": \"14\",\r\n    \"id_marcacion_user\": \"13\",\r\n    \"tipo_marcacion\": \"entrada\",\r\n    \"fecha_hora\": \"14-02-2025 17:50:20\",\r\n    \"foto\": \"\",\r\n    \"latitud\": \"55445\",\r\n    \"longitud\": \"54554\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sm.smfoods.com.pe/api/web/marcaciones/crear",
+					"protocol": "https",
+					"host": [
+						"sm",
+						"smfoods",
+						"com",
+						"pe"
+					],
+					"path": [
+						"api",
+						"web",
+						"marcaciones",
+						"crear"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
