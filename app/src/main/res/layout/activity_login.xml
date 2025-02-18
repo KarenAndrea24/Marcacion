@@ -1,87 +1,79 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/main"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="20dp"
     android:background="@color/white">
 
-    <!-- Logo -->
-    <ImageView
-        android:id="@+id/imgLogo"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:src="@drawable/im_logo"
-        android:layout_marginBottom="20dp" />
-
-    <!-- Email -->
-    <EditText
-        android:id="@+id/etEmail"
+    <LinearLayout
+        android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Email"
-        android:inputType="textEmailAddress"
-        android:drawableStart="@drawable/ic_person"
-        android:padding="10dp"
-        android:background="@drawable/custom_input"
-        android:textColor="@color/black"
-        android:textColorHint="@color/gray"
-        android:layout_marginBottom="10dp" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="20dp">
 
-    <!-- Contraseña -->
-    <EditText
-        android:id="@+id/etPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Contraseña"
-        android:inputType="textPassword"
-        android:drawableStart="@drawable/ic_padlock"
-        android:padding="10dp"
-        android:background="@drawable/custom_input"
-        android:textColor="@color/black"
-        android:textColorHint="@color/gray"
-        android:layout_marginBottom="10dp" />
+        <!-- Logo -->
+        <ImageView
+            android:id="@+id/imgLogo"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/im_logo"
+            android:layout_marginBottom="20dp" />
 
-    <!-- Botón de Login -->
-    <Button
-        android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="10dp"
-        android:backgroundTint="@color/blue"
-        android:padding="12dp"
-        android:text="Iniciar Sesión"
-        android:textColor="@color/white"
-        android:textStyle="bold" />
+        <!-- Email -->
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:drawableStart="@drawable/ic_person"
+            android:padding="10dp"
+            android:background="@drawable/custom_input"
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray"
+            android:layout_marginBottom="10dp" />
 
+        <!-- Contraseña -->
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Contraseña"
+            android:inputType="textPassword"
+            android:drawableStart="@drawable/ic_padlock"
+            android:padding="10dp"
+            android:background="@drawable/custom_input"
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray"
+            android:layout_marginBottom="10dp" />
 
-<!--    &lt;!&ndash; Texto de Recuperar Contraseña &ndash;&gt;-->
-<!--    <TextView-->
-<!--        android:id="@+id/tvForgotPassword"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="¿Olvidaste tu contraseña?"-->
-<!--        android:textColor="@color/blue"-->
-<!--        android:textStyle="bold"-->
-<!--        android:layout_marginTop="5dp"-->
-<!--        android:layout_gravity="center"/>-->
+        <!-- Botón de Login -->
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="10dp"
+            android:backgroundTint="@color/blue"
+            android:padding="12dp"
+            android:text="Iniciar Sesión"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+    </LinearLayout>
 
+    <!-- 🔥 Loading (Se superpone y cubre toda la pantalla cuando es visible) -->
     <RelativeLayout
         android:id="@+id/login_rl_loading"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#61000000"
-        android:gravity="center"
-        android:visibility="gone"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true">
+        android:visibility="gone">
 
         <ProgressBar
             android:id="@+id/login_pb_loading"
             android:layout_width="130dp"
-            android:layout_height="130dp" />
+            android:layout_height="130dp"
+            android:layout_centerInParent="true" />
 
     </RelativeLayout>
-</LinearLayout>
+
+</RelativeLayout>

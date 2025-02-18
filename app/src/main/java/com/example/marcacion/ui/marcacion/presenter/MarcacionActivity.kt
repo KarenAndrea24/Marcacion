@@ -76,6 +76,11 @@ class MarcacionActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
+    private fun convertImageFileToBase64(file: File): String {
+        val bytes = file.readBytes()
+        return android.util.Base64.encodeToString(bytes, android.util.Base64.DEFAULT)
+    }
+
     private fun takePhoto() {
         val imageCapture = imageCapture ?: return
 
@@ -91,6 +96,8 @@ class MarcacionActivity : AppCompatActivity() {
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val savedUri = photoFile.toUri()
+                    //TODO: Enviar la foto a la API como base64
+                    val base64String = convertImageFileToBase64(photoFile)
                     binding.imgPhoto.setImageURI(savedUri)
                 }
             })
@@ -131,6 +138,13 @@ class MarcacionActivity : AppCompatActivity() {
             }
         }
         fechaHoraThread.start()
+
+        // Obtener ubicación
+        binding.btnGetLocation.setOnClickListener {
+            println("🟢 Botón 'Obtener Ubicación' presionado")
+            Toast.makeText(this, "Obteniendo ubicación...", Toast.LENGTH_SHORT).show()
+            checkGPSAndRequestLocation()  // ⚡ Primero revisa si el GPS está encendido
+        }
     }
 
 
@@ -162,38 +176,86 @@ class MarcacionActivity : AppCompatActivity() {
         }
     }
 
+    private fun checkGPSAndRequestLocation() {
+        val locationManager = getSystemService(LOCATION_SERVICE) as android.location.LocationManager
+        val isGPSEnabled = locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)
+
+        if (!isGPSEnabled) {
+            println("⚠ GPS DESACTIVADO. Solicitando activación...")
+
+            // 📌 Mostrar diálogo para activar GPS
+            val intent = android.content.Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            startActivity(intent)
+
+            Toast.makeText(this, "Activa el GPS para obtener ubicación", Toast.LENGTH_LONG).show()
+        } else {
+            println("✅ GPS ACTIVADO. Procediendo a obtener ubicación...")
+            startLocationUpdates()  // 📡 Iniciar ubicación si el GPS está activado
+        }
+    }
+
+
     private fun startLocationUpdates() {
         val locationRequest = LocationRequest.create().apply {
-            interval = 10000
-            fastestInterval = 5000
+            interval = 10000  // Actualización cada 10 segundos
+            fastestInterval = 5000  // Intervalo rápido
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
-                    binding.tvLocation.text = "Ubicación: ${location.latitude}, ${location.longitude}"
+                    println("📍 Nueva ubicación recibida: ${location.latitude}, ${location.longitude}")
+
+                    runOnUiThread {
+                        binding.tvLocation.text = "Ubicación: ${location.latitude}, ${location.longitude}"
+                    }
                 }
             }
         }
 
-        if (ActivityCompat.checkSelfPermission(
-                this, Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        } else {
-            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+        // 📌 Verificar si los permisos de ubicación están concedidos
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            println("⚠ Permisos de ubicación NO concedidos. Solicitando permisos...")
+            requestPermissions()
+            return
         }
+
+        // 📌 Obtener la última ubicación conocida antes de iniciar actualizaciones en tiempo real
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                println("📍 Última ubicación conocida: ${location.latitude}, ${location.longitude}")
+                runOnUiThread {
+                    binding.tvLocation.text = "Última Ubicación: ${location.latitude}, ${location.longitude}"
+                }
+            } else {
+                println("⚠ No se encontró una última ubicación conocida.")
+            }
+        }.addOnFailureListener { e ->
+            println("❌ Error obteniendo última ubicación: ${e.message}")
+        }
+
+        // 📡 Iniciar actualizaciones en tiempo real
+        println("📡 Iniciando requestLocationUpdates...")
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+    }
+
+
+    private fun requestPermissions() {
+        requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
+            println("✅ Permiso concedido. Iniciando ubicación...")
             startLocationUpdates()
         } else {
             Toast.makeText(this, "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show()
+            println("❌ Permiso de ubicación denegado.")
         }
     }
 
