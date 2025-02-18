@@ -2,8 +2,8 @@ package com.example.marcacion.data.service
 
 import com.example.marcacion.data.dto.request.LoginRequest
 import com.example.marcacion.data.dto.response.LoginResponse
+import com.example.marcacion.data.dto.response.SearchDniResponse
 import com.example.marcacion.data.utils.Constants
-import com.example.myapplication.data.service.UserService
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -19,5 +19,9 @@ class UserServiceImp {
 
     suspend fun login(loginRequest: LoginRequest): Response<LoginResponse> {
         return service.login(loginRequest)
+    }
+
+    suspend fun obtenerNombrePorDNI(dni: String): Response<SearchDniResponse> {
+        return service.obtenerNombrePorDNI(dni)
     }
 }
