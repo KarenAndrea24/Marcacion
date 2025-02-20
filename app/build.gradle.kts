@@ -1,7 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    id("kotlin-kapt") // Habilitar Kapt para Room
+//    id("kotlin-kapt") // Habilitar Kapt para Room
+    id("com.google.devtools.ksp") version "1.8.0-1.0.9" // Agrega esta línea
 }
 
 android {
@@ -28,11 +29,16 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
+
+    viewBinding {
+        enable = true
+    }
+
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 }
 
@@ -60,7 +66,7 @@ dependencies {
     // Room (SQLite) para base de datos local
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    kapt(libs.room.compiler) // Importante para generar código Room
+//    kapt(libs.room.compiler) // Importante para generar código Room
 
     // Corrutinas para ejecución en segundo plano
     implementation(libs.coroutines.android)
@@ -81,3 +87,7 @@ dependencies {
     implementation(libs.lifecycle.livedata.ktx)
 }
 
+ksp {
+    arg("room.incremental", "true")
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
