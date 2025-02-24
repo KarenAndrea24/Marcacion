@@ -33,4 +33,7 @@ interface MarcacionDao {
     @Query("UPDATE marcaciones SET estado = 1 WHERE id = (SELECT id FROM marcaciones ORDER BY id DESC LIMIT 1) AND estado = 0")
     fun updateEstadoMarcacion()
     // Este método actualizamos el ultimo registro y si esta en 0 a 1.
+
+    @Query("SELECT * FROM marcaciones WHERE estado = 0 ORDER BY id DESC LIMIT 1")
+    suspend fun obtenerPendientes(): List<MarcacionEntity>
 }

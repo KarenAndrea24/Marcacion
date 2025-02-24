@@ -43,18 +43,11 @@ class MarcacionViewModel(private val repository: UserRepository = UserRepository
     }
 
     fun observerCrearMarcacion(marcacionRequest: MarcacionRequest) {
-        var body = ""
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 _data_marcacion.postValue(StateMarcacion.Loading)
                 val response = repository.observerCrearMarcacion(marcacionRequest)
-                val rawError = response.errorBody()?.string()
-                body = response.body().toString()
-
                 if (response.isSuccessful) {
-                    val rawError = response.errorBody()?.string()
-                    println("DEBUG => Código: ${response.code()}, ErrorBody: $rawError")
-
                     response.body()?.let {
                         _data_marcacion.postValue(StateMarcacion.Success(it))
                         _errorMessage.postValue(null)
@@ -68,7 +61,7 @@ class MarcacionViewModel(private val repository: UserRepository = UserRepository
                 }
             } catch (e: Exception) {
                 _data_marcacion.postValue(StateMarcacion.Error(e.message.toString()))
-                _errorMessage.postValue(e.message + " " + body)
+                _errorMessage.postValue(e.message)
             }
         }
     }

@@ -15,18 +15,28 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
+import androidx.lifecycle.lifecycleScope
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.marcacion.data.dto.model.StateMarcacion
 import com.example.marcacion.data.dto.model.StateSearchDni
 import com.example.marcacion.data.service.LocationHelper
+import com.example.marcacion.data.service.MarcacioneSyncWorker
 import com.example.marcacion.data.utils.CameraUtils
 import com.example.marcacion.database.MarcacionDatabase
 import com.example.marcacion.database.dao.MarcacionDao
 import com.example.marcacion.databinding.ActivityMarcacionBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 class MarcacionActivity : AppCompatActivity() {
 
@@ -59,6 +69,26 @@ class MarcacionActivity : AppCompatActivity() {
         setupUI()
         observerBuscarDNI()
         observerCrearMarcacion()
+
+        // Configura las restricciones para WorkManager
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        // Configura WorkManager para sincronización periódica
+        val workRequest = PeriodicWorkRequestBuilder<MarcacioneSyncWorker>(
+            15, // Mínimo 15 minutos
+            TimeUnit.MINUTES
+        )
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(applicationContext)
+            .enqueueUniquePeriodicWork(
+                "MarcacionSyncWork",
+                ExistingPeriodicWorkPolicy.KEEP,
+                workRequest
+            )
     }
 
     private val requestPermissions =
@@ -171,15 +201,6 @@ class MarcacionActivity : AppCompatActivity() {
         }
     }
 
-    private fun convertImageFileToBase64(file: File): String {
-
-        val bytes = file.readBytes()
-        return "data:image/png;base64," + android.util.Base64.encodeToString(
-            bytes,
-            android.util.Base64.DEFAULT
-        )
-    }
-
     private fun takePhoto() {
         val imageCapture = imageCapture ?: return
 
@@ -199,19 +220,19 @@ class MarcacionActivity : AppCompatActivity() {
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     // 1. Decodifica el archivo a Bitmap
-                    val originalBitmap = android.graphics.BitmapFactory.decodeFile(photoFile.absolutePath)
+                    val originalBitmap =
+                        android.graphics.BitmapFactory.decodeFile(photoFile.absolutePath)
 
                     // 2. Corrige la orientación según EXIF
-                    val correctedBitmap = CameraUtils().fixImageOrientation(photoFile, originalBitmap)
+                    val correctedBitmap =
+                        CameraUtils().fixImageOrientation(photoFile, originalBitmap)
 
                     // 3. Comprime la imagen ya rotada
-                    val compressedData = CameraUtils().compressImageToMaxSize(correctedBitmap, 500)  // 500 KB
+                    val compressedData =
+                        CameraUtils().compressImageToMaxSize(correctedBitmap, 500)  // 500 KB
 
                     // 4. Convertir a Base64
-                    val base64String = "data:image/jpeg;base64," + android.util.Base64.encodeToString(
-                        compressedData,
-                        android.util.Base64.DEFAULT
-                    )
+                    val base64String = convertToBase64(compressedData)
 
                     // 5. Mostrar la imagen comprimida (y rotada) en el ImageView
                     val compressedBitmap = android.graphics.BitmapFactory.decodeByteArray(
@@ -224,6 +245,13 @@ class MarcacionActivity : AppCompatActivity() {
                 }
 
             })
+    }
+
+    private fun convertToBase64(compressedData: ByteArray): String {
+        return "data:image/jpeg;base64," + android.util.Base64.encodeToString(
+            compressedData,
+            android.util.Base64.DEFAULT
+        )
     }
 
     private fun observerBuscarDNI() {
@@ -253,7 +281,10 @@ class MarcacionActivity : AppCompatActivity() {
                     hideLoading()
                     //TODO: Actualizar la marcacion en la BD sqlite, pero actualizando
                     // el campo 'estado' con el 1 de sincronizado
-                    dao.updateEstadoMarcacion()
+                    // Ejecutar la actualización en un hilo de fondo
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        dao.updateEstadoMarcacion()
+                    }
                     Toast.makeText(
                         this,
                         "Marcación exitosa " + data.info.status + "MESSAGE: " + data.info.status,
