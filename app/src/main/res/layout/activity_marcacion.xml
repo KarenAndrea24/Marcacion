@@ -1,127 +1,116 @@
-<?xml version="1.0" encoding="utf-8"?>
-            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Fecha y Hora en tiempo real -->
+            <TextView
+                android:id="@+id/tvDateTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+
+            <!-- Vista previa de la cámara con SafePreviewView -->
+            <com.example.marcacion.customview.SafePreviewView
+                android:id="@+id/previewView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/white">
+                android:layout_height="300dp"
+                android:layout_marginBottom="10dp"
+                tools:background="@drawable/ic_camera" />
 
-                <ScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+            <!-- Captura de Foto -->
+            <ImageView
+                android:id="@+id/imgPhoto"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/custom_input"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_camera" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp"
-                        android:gravity="center">
+            <Button
+                android:id="@+id/btnCapturePhoto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:backgroundTint="@color/blue"
+                android:text="Tomar Foto"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
 
-                        <!-- Fecha y Hora en tiempo real -->
-                        <TextView
-                            android:id="@+id/tvDateTime"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/black"
-                            android:layout_marginBottom="20dp" />
+            <!-- Campo para DNI -->
+            <EditText
+                android:id="@+id/etDNI"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/custom_input"
+                android:drawableStart="@drawable/ic_person"
+                android:hint="Ingrese su DNI"
+                android:inputType="number"
+                android:padding="10dp"
+                android:textColor="@color/black"
+                android:textColorHint="@color/gray" />
 
-                        <!-- Vista previa de la cámara -->
-                        <androidx.camera.view.PreviewView
-                            android:id="@+id/previewView"
-                            android:layout_width="match_parent"
-                            android:layout_height="300dp"
-                            android:layout_marginBottom="10dp" />
+            <!-- Nombre obtenido de la API -->
+            <TextView
+                android:id="@+id/tvUserName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="Nombre: ---"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
-                        <!-- Captura de Foto -->
-                        <ImageView
-                            android:id="@+id/imgPhoto"
-                            android:layout_width="150dp"
-                            android:layout_height="150dp"
-                            android:src="@drawable/ic_camera"
-                            android:scaleType="centerCrop"
-                            android:background="@drawable/custom_input"
-                            android:layout_marginBottom="10dp" />
+            <Button
+                android:id="@+id/btnFetchName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:backgroundTint="@color/blue"
+                android:text="Obtener Nombre"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
 
-                        <Button
-                            android:id="@+id/btnCapturePhoto"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Tomar Foto"
-                            android:backgroundTint="@color/blue"
-                            android:textColor="@color/white"
-                            android:textStyle="bold"
-                            android:layout_marginBottom="20dp" />
+            <Button
+                android:id="@+id/btnGetLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/blue_light"
+                android:text="Marcacion"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
 
-                        <!-- Campo para DNI -->
-                        <EditText
-                            android:id="@+id/etDNI"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Ingrese su DNI"
-                            android:inputType="number"
-                            android:drawableStart="@drawable/ic_person"
-                            android:padding="10dp"
-                            android:background="@drawable/custom_input"
-                            android:textColor="@color/black"
-                            android:textColorHint="@color/gray"
-                            android:layout_marginBottom="10dp" />
+        </LinearLayout>
+    </ScrollView>
 
-                        <!-- Nombre obtenido de la API -->
-                        <TextView
-                            android:id="@+id/tvUserName"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Nombre: ---"
-                            android:textSize="16sp"
-                            android:textColor="@color/black"
-                            android:textStyle="bold"
-                            android:layout_marginBottom="10dp" />
+    <!-- Loading (cubre toda la pantalla cuando se muestra) -->
+    <RelativeLayout
+        android:id="@+id/login_rl_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#61000000"
+        android:gravity="center"
+        android:visibility="gone">
 
-                        <Button
-                            android:id="@+id/btnFetchName"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Obtener Nombre"
-                            android:backgroundTint="@color/blue"
-                            android:textColor="@color/white"
-                            android:textStyle="bold"
-                            android:layout_marginBottom="20dp" />
-
-                        <!-- Ubicación en segundo plano -->
-                        <TextView
-                            android:id="@+id/tvLocation"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Ubicación: ---"
-                            android:textSize="16sp"
-                            android:textColor="@color/black"
-                            android:layout_marginBottom="10dp" />
-
-                        <Button
-                            android:id="@+id/btnGetLocation"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Obtener Ubicación"
-                            android:backgroundTint="@color/blue"
-                            android:textColor="@color/white"
-                            android:textStyle="bold" />
-
-                    </LinearLayout>
-                </ScrollView>
-
-                <!-- Loading (cubre toda la pantalla cuando se muestra) -->
-                <RelativeLayout
-                    android:id="@+id/login_rl_loading"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="#61000000"
-                    android:gravity="center"
-                    android:visibility="gone">
-
-                    <ProgressBar
-                        android:id="@+id/login_pb_loading"
-                        android:layout_width="130dp"
-                        android:layout_height="130dp" />
-
-                </RelativeLayout>
-            </RelativeLayout>
+        <ProgressBar
+            android:id="@+id/login_pb_loading"
+            android:layout_width="130dp"
+            android:layout_height="130dp" />
+    </RelativeLayout>
+</RelativeLayout>

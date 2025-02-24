@@ -1,7 +1,9 @@
 package com.example.marcacion.data.service
 
 import com.example.marcacion.data.dto.request.LoginRequest
+import com.example.marcacion.data.dto.request.MarcacionRequest
 import com.example.marcacion.data.dto.response.LoginResponse
+import com.example.marcacion.data.dto.response.MarcacionResponse
 import com.example.marcacion.data.dto.response.SearchDniResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -15,4 +17,7 @@ interface UserService {
 
     @GET("api/web/marcaciones/{dni}/dni")
     suspend fun obtenerNombrePorDNI(@Path("dni") dni: String): Response<SearchDniResponse>
+
+    @POST("api/web/marcaciones/crear")
+    suspend fun observerCrearMarcacion(@Body marcacionRequest: MarcacionRequest): Response<MarcacionResponse>
 }

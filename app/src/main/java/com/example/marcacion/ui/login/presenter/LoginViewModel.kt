@@ -24,20 +24,57 @@ class LoginViewModel(private val repository: UserRepository = UserRepository()) 
     }
 
     fun login(email: String, password: String) {
+        when {
+            email.isBlank() -> {
+                _errorMessage.postValue(Constants.EMPTY_EMAIL_ERROR)
+                _data.postValue(StateLogin.Error(Constants.EMPTY_EMAIL_ERROR))
+                return
+            }
+
+            password.isBlank() -> {
+                _errorMessage.postValue(Constants.EMPTY_PASSWORD_ERROR)
+                _data.postValue(StateLogin.Error(Constants.EMPTY_PASSWORD_ERROR))
+                return
+            }
+        }
+//        CoroutineScope(Dispatchers.IO).launch {
+//            _data.postValue(StateLogin.Loading)
+//            val response = repository.login(LoginRequest(email, password))
+//
+//            if (response.isSuccessful) {
+//                response.body()?.let {
+//                    _data.postValue(StateLogin.Success(it))
+//                    _errorMessage.postValue(null)
+//                } ?: {
+//                    _data.postValue(StateLogin.Error(Constants.LOGIN_FAILED))
+//                    _errorMessage.postValue(Constants.LOGIN_FAILED)
+//                }
+//            } else {
+//                _data.postValue(StateLogin.Error(Constants.NETWORK_ERROR))
+//                _errorMessage.postValue(Constants.LOGIN_FAILED)
+//            }
+//        }
         CoroutineScope(Dispatchers.IO).launch {
             _data.postValue(StateLogin.Loading)
             val response = repository.login(LoginRequest(email, password))
+
             if (response.isSuccessful) {
                 response.body()?.let {
                     _data.postValue(StateLogin.Success(it))
                     _errorMessage.postValue(null)
-                } ?: {
-                    _data.postValue(StateLogin.Error(Constants.LOGIN_FAILED))
-                    _errorMessage.postValue(Constants.LOGIN_FAILED)
+                } ?: run {
+                    _data.postValue(StateLogin.Error(Constants.GENERAL_ERROR))
+                    _errorMessage.postValue(Constants.GENERAL_ERROR)
                 }
             } else {
-                _data.postValue(StateLogin.Error(Constants.NETWORK_ERROR))
-                _errorMessage.postValue(Constants.LOGIN_FAILED)
+                _errorMessage.postValue(
+                    when (response.code()) {
+                        400 -> Constants.INVALID_CREDENTIALS_ERROR
+                        401 -> Constants.UNAUTHORIZED_ERROR
+                        else -> Constants.NETWORK_ERROR
+                    }
+                )
+                _data.postValue(StateLogin.Error(_errorMessage.value ?: Constants.GENERAL_ERROR))
             }
         }
     }

@@ -3,7 +3,7 @@ package com.example.marcacion.ui.marcacion.presenter
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,11 +16,28 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
+import androidx.lifecycle.lifecycleScope
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.example.marcacion.data.dto.model.StateMarcacion
 import com.example.marcacion.data.dto.model.StateSearchDni
+import com.example.marcacion.data.service.LocationHelper
+import com.example.marcacion.data.service.MarcacioneSyncWorker
+import com.example.marcacion.data.utils.CameraUtils
+import com.example.marcacion.database.MarcacionDatabase
+import com.example.marcacion.database.dao.MarcacionDao
 import com.example.marcacion.databinding.ActivityMarcacionBinding
-import com.google.android.gms.location.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 class MarcacionActivity : AppCompatActivity() {
 
@@ -28,20 +45,51 @@ class MarcacionActivity : AppCompatActivity() {
     private val viewModel by viewModels<MarcacionViewModel>()
     private var imageCapture: ImageCapture? = null
 
-    // Para geolocalización
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var locationCallback: LocationCallback
+    // Base de datos y DAO
+    private lateinit var db: MarcacionDatabase
+    private lateinit var dao: MarcacionDao
+
+    // Clase helper para la ubicación
+    private lateinit var locationHelper: LocationHelper
+
+    private lateinit var nombre: String
+    private lateinit var dni: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMarcacionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        // Inicializa la base de datos y el DAO
+        db = MarcacionDatabase.getDatabase(applicationContext)
+        dao = db.marcacionDao()
+
+        // Inicializa LocationHelper
+        locationHelper = LocationHelper(this, dao, viewModel)
 
         setupUI()
-        startLocationUpdates()
         observerBuscarDNI()
+        observerCrearMarcacion()
+
+        // Configura las restricciones para WorkManager
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        // Configura WorkManager para sincronización periódica
+        val workRequest = PeriodicWorkRequestBuilder<MarcacioneSyncWorker>(
+            15, // Mínimo 15 minutos
+            TimeUnit.MINUTES
+        )
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(applicationContext)
+            .enqueueUniquePeriodicWork(
+                "MarcacionSyncWork",
+                ExistingPeriodicWorkPolicy.KEEP,
+                workRequest
+            )
     }
 
     private val requestPermissions =
@@ -49,12 +97,13 @@ class MarcacionActivity : AppCompatActivity() {
             if (permissions[Manifest.permission.CAMERA] == true) {
                 startCamera()
             } else {
-                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show()
             }
         }
 
-    private fun allPermissionsGranted() = ContextCompat.checkSelfPermission(
-        this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+    private fun allPermissionsGranted() =
+        ContextCompat.checkSelfPermission(
+            this, Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
@@ -62,23 +111,90 @@ class MarcacionActivity : AppCompatActivity() {
             val cameraProvider = cameraProviderFuture.get()
             val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
             imageCapture = ImageCapture.Builder().build()
+
             val preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(binding.previewView.surfaceProvider)
+                it.surfaceProvider = binding.previewView.surfaceProvider
             }
 
             try {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture)
+                    this, cameraSelector, preview, imageCapture
+                )
             } catch (exc: Exception) {
-                Toast.makeText(this, "Error al iniciar la cámara", Toast.LENGTH_SHORT).show()
             }
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun convertImageFileToBase64(file: File): String {
-        val bytes = file.readBytes()
-        return android.util.Base64.encodeToString(bytes, android.util.Base64.DEFAULT)
+    private fun setupUI() {
+        // Solicitar permisos de la cámara
+        if (allPermissionsGranted()) {
+            startCamera()
+        } else {
+            requestPermissions.launch(arrayOf(Manifest.permission.CAMERA))
+        }
+
+        // Botón para capturar foto
+        binding.btnCapturePhoto.setOnClickListener {
+            takePhoto()
+        }
+
+        // Botón para buscar DNI
+        binding.btnFetchName.setOnClickListener {
+            dni = binding.etDNI.text.toString()
+            if (dni.length == 8) {
+                viewModel.obtenerNombrePorDNI(dni)
+            } else {
+            }
+        }
+
+        // Hilo para actualizar fecha y hora
+        val fechaHoraThread = Thread {
+            while (!Thread.interrupted()) {
+                runOnUiThread {
+                    binding.tvDateTime.text = SimpleDateFormat(
+                        "dd/MM/yyyy HH:mm:ss", Locale.getDefault()
+                    ).format(Date())
+                }
+                Thread.sleep(1000)
+            }
+        }
+        fechaHoraThread.start()
+
+        // Botón para la marcacion con ubicación
+        binding.btnGetLocation.setOnClickListener {
+
+            // Pasamos los datos al helper
+            locationHelper.dni = dni
+            locationHelper.nombre = nombre
+
+            // Primero revisamos permisos de ubicación
+            checkLocationPermissions()
+        }
+    }
+
+    private fun checkLocationPermissions() {
+        if (
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Pedir permisos
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        } else {
+            // Si ya tenemos permisos, delegamos la lógica al LocationHelper
+            locationHelper.checkGPSAndRequestLocation()
+        }
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            locationHelper.checkGPSAndRequestLocation()
+        } else {
+        }
     }
 
     private fun takePhoto() {
@@ -91,70 +207,43 @@ class MarcacionActivity : AppCompatActivity() {
             outputOptions, ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
-                    Toast.makeText(this@MarcacionActivity, "Error al capturar la foto: ${exc.message}", Toast.LENGTH_SHORT).show()
+                    Log.e("MarcacionActivity", "Error al capturar la foto", exc)
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val savedUri = photoFile.toUri()
-                    //TODO: Enviar la foto a la API como base64
-                    val base64String = convertImageFileToBase64(photoFile)
-                    binding.imgPhoto.setImageURI(savedUri)
+                    // 1. Decodifica el archivo a Bitmap
+                    val originalBitmap =
+                        android.graphics.BitmapFactory.decodeFile(photoFile.absolutePath)
+
+                    // 2. Corrige la orientación según EXIF
+                    val correctedBitmap =
+                        CameraUtils().fixImageOrientation(photoFile, originalBitmap)
+
+                    // 3. Comprime la imagen ya rotada
+                    val compressedData =
+                        CameraUtils().compressImageToMaxSize(correctedBitmap, 500)  // 500 KB
+
+                    // 4. Convertir a Base64
+                    val base64String = convertToBase64(compressedData)
+
+                    // 5. Mostrar la imagen comprimida (y rotada) en el ImageView
+                    val compressedBitmap = android.graphics.BitmapFactory.decodeByteArray(
+                        compressedData, 0, compressedData.size
+                    )
+                    binding.imgPhoto.setImageBitmap(compressedBitmap)
+
+                    // 6. Guardar la imagen base64 en tu LocationHelper
+                    locationHelper.base64String = base64String
                 }
+
             })
     }
 
-    private fun setupUI() {
-        //solicitar permisos de la camera
-        if (this.allPermissionsGranted()) {
-            this.startCamera()
-        } else {
-            this.requestPermissions.launch(arrayOf(Manifest.permission.CAMERA))
-        }
-
-        // Capturar foto
-        binding.btnCapturePhoto.setOnClickListener {
-            this.takePhoto()
-        }
-
-        // Buscar DNI
-        binding.btnFetchName.setOnClickListener {
-            val dni = binding.etDNI.text.toString()
-            if (dni.length == 8) {
-                viewModel.obtenerNombrePorDNI(dni)
-            } else {
-                Toast.makeText(this, "Ingrese un DNI válido", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        // Actualizar fecha y hora en tiempo real
-        val fechaHoraThread = Thread {
-            while (!Thread.interrupted()) {
-                runOnUiThread {
-                    binding.tvDateTime.text = java.text.SimpleDateFormat(
-                        "dd/MM/yyyy HH:mm:ss", java.util.Locale.getDefault()
-                    ).format(java.util.Date())
-                }
-                Thread.sleep(1000)
-            }
-        }
-        fechaHoraThread.start()
-
-        // Obtener ubicación
-        binding.btnGetLocation.setOnClickListener {
-            println("🟢 Botón 'Obtener Ubicación' presionado")
-            Toast.makeText(this, "Obteniendo ubicación...", Toast.LENGTH_SHORT).show()
-            checkGPSAndRequestLocation()  // ⚡ Primero revisa si el GPS está encendido
-        }
-    }
-
-
-
-    private fun showLoading() {
-        binding.loginRlLoading.visibility = View.VISIBLE
-    }
-
-    private fun hideLoading() {
-        binding.loginRlLoading.visibility = View.GONE
+    private fun convertToBase64(compressedData: ByteArray): String {
+        return "data:image/jpeg;base64," + android.util.Base64.encodeToString(
+            compressedData,
+            android.util.Base64.DEFAULT
+        )
     }
 
     private fun observerBuscarDNI() {
@@ -162,6 +251,7 @@ class MarcacionActivity : AppCompatActivity() {
             when (data) {
                 is StateSearchDni.Success -> {
                     hideLoading()
+                    nombre = data.info.data.name
                     binding.tvUserName.text = "Nombre: ${data.info.data.name}"
                 }
 
@@ -176,91 +266,46 @@ class MarcacionActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkGPSAndRequestLocation() {
-        val locationManager = getSystemService(LOCATION_SERVICE) as android.location.LocationManager
-        val isGPSEnabled = locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)
-
-        if (!isGPSEnabled) {
-            println("⚠ GPS DESACTIVADO. Solicitando activación...")
-
-            // 📌 Mostrar diálogo para activar GPS
-            val intent = android.content.Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-            startActivity(intent)
-
-            Toast.makeText(this, "Activa el GPS para obtener ubicación", Toast.LENGTH_LONG).show()
-        } else {
-            println("✅ GPS ACTIVADO. Procediendo a obtener ubicación...")
-            startLocationUpdates()  // 📡 Iniciar ubicación si el GPS está activado
-        }
-    }
-
-
-    private fun startLocationUpdates() {
-        val locationRequest = LocationRequest.create().apply {
-            interval = 10000  // Actualización cada 10 segundos
-            fastestInterval = 5000  // Intervalo rápido
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        }
-
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                for (location in locationResult.locations) {
-                    println("📍 Nueva ubicación recibida: ${location.latitude}, ${location.longitude}")
-
-                    runOnUiThread {
-                        binding.tvLocation.text = "Ubicación: ${location.latitude}, ${location.longitude}"
+    private fun observerCrearMarcacion() {
+        viewModel.data_marcacion.observe(this) { data ->
+            when (data) {
+                is StateMarcacion.Success -> {
+                    hideLoading()
+                    //TODO: Actualizar la marcacion en la BD sqlite, pero actualizando
+                    // el campo 'estado' con el 1 de sincronizado
+                    // Ejecutar la actualización en un hilo de fondo
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        dao.updateEstadoMarcacion()
                     }
+                    Toast.makeText(
+                        this,
+                        "Marcación exitosa - " + data.info.status + "MESSAGE: " + data.info.message,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                is StateMarcacion.Loading -> {
+                    showLoading()
+                }
+
+                is StateMarcacion.Error -> {
+                    hideLoading()
                 }
             }
         }
-
-        // 📌 Verificar si los permisos de ubicación están concedidos
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            println("⚠ Permisos de ubicación NO concedidos. Solicitando permisos...")
-            requestPermissions()
-            return
-        }
-
-        // 📌 Obtener la última ubicación conocida antes de iniciar actualizaciones en tiempo real
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            if (location != null) {
-                println("📍 Última ubicación conocida: ${location.latitude}, ${location.longitude}")
-                runOnUiThread {
-                    binding.tvLocation.text = "Última Ubicación: ${location.latitude}, ${location.longitude}"
-                }
-            } else {
-                println("⚠ No se encontró una última ubicación conocida.")
-            }
-        }.addOnFailureListener { e ->
-            println("❌ Error obteniendo última ubicación: ${e.message}")
-        }
-
-        // 📡 Iniciar actualizaciones en tiempo real
-        println("📡 Iniciando requestLocationUpdates...")
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
     }
 
-
-    private fun requestPermissions() {
-        requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    private fun showLoading() {
+        binding.loginRlLoading.visibility = View.VISIBLE
     }
 
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            println("✅ Permiso concedido. Iniciando ubicación...")
-            startLocationUpdates()
-        } else {
-            Toast.makeText(this, "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show()
-            println("❌ Permiso de ubicación denegado.")
-        }
+    private fun hideLoading() {
+        binding.loginRlLoading.visibility = View.GONE
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        fusedLocationClient.removeLocationUpdates(locationCallback)
+        // Detener las actualizaciones de ubicación (si están en curso)
+        locationHelper.stopLocationUpdates()
     }
 }

@@ -14,10 +14,11 @@
         <!-- Logo -->
         <ImageView
             android:id="@+id/imgLogo"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:src="@drawable/im_logo"
-            android:layout_marginBottom="20dp" />
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:src="@drawable/logo_app"
+            android:layout_marginBottom="20dp"
+            android:scaleType="fitCenter"/>
 
         <!-- Email -->
         <EditText
@@ -51,13 +52,25 @@
         <Button
             android:id="@+id/btnLogin"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginBottom="10dp"
-            android:backgroundTint="@color/blue"
-            android:padding="12dp"
+            android:layout_height="49dp"
+            android:layout_marginBottom="20dp"
+            android:backgroundTint="@color/blue_light"
+            android:padding="10dp"
             android:text="Iniciar Sesión"
             android:textColor="@color/white"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/holo_red_light"
+            android:textSize="14sp"
+            android:visibility="gone"
+            android:gravity="center"
+            android:padding="8dp"
+            android:textStyle="bold"
+            android:text="" />
     </LinearLayout>
 
     <!-- 🔥 Loading (Se superpone y cubre toda la pantalla cuando es visible) -->
