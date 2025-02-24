@@ -46,8 +46,8 @@
                             android:id="@+id/btnCapturePhoto"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Tomar Foto"
-                            android:backgroundTint="@color/blue"
+                            android:text="Tomar foto"
+                            android:backgroundTint="@color/blue_light"
                             android:textColor="@color/white"
                             android:textStyle="bold"
                             android:layout_marginBottom="20dp" />
@@ -81,8 +81,8 @@
                             android:id="@+id/btnFetchName"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Obtener Nombre"
-                            android:backgroundTint="@color/blue"
+                            android:text="Obtener nombre"
+                            android:backgroundTint="@color/blue_light"
                             android:textColor="@color/white"
                             android:textStyle="bold"
                             android:layout_marginBottom="20dp" />
@@ -102,7 +102,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="Obtener Ubicación"
-                            android:backgroundTint="@color/blue"
+                            android:backgroundTint="@color/blue_light"
                             android:textColor="@color/white"
                             android:textStyle="bold" />
 
