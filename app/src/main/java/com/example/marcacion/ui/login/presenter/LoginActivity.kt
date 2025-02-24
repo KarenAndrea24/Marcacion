@@ -18,6 +18,7 @@ import com.example.marcacion.data.dto.dataSource.getIdUser
 import com.example.marcacion.data.dto.dataSource.saveIdUser
 import com.example.marcacion.data.dto.model.StateLogin
 import com.example.marcacion.data.service.LocationService
+import com.example.marcacion.data.utils.Constants
 import com.example.marcacion.ui.marcacion.presenter.MarcacionActivity
 
 class LoginActivity : AppCompatActivity() {
@@ -122,9 +123,26 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun sendLogin() {
+//        val email = binding.etEmail.text.toString()
+//        val password = binding.etPassword.text.toString()
+        val email = binding.etEmail.text.toString().trim()
+        val password = binding.etPassword.text.toString().trim()
+
+        when {
+            email.isEmpty() -> {
+                binding.tvError.text = Constants.EMPTY_EMAIL_ERROR
+                binding.tvError.visibility = View.VISIBLE
+                return
+            }
+            password.isEmpty() -> {
+                binding.tvError.text = Constants.EMPTY_PASSWORD_ERROR
+                binding.tvError.visibility = View.VISIBLE
+                return
+            }
+        }
+
         showLoading()
-        val email = binding.etEmail.text.toString()
-        val password = binding.etPassword.text.toString()
+        binding.tvError.visibility = View.GONE // Ocultar mensaje de error si todo está bien
         viewModel.login(email, password)
     }
 
@@ -147,6 +165,7 @@ class LoginActivity : AppCompatActivity() {
             when (data) {
                 is StateLogin.Success -> {
                     hideLoading()
+                    binding.tvError.visibility = View.GONE // Oculta el error al iniciar sesión
                     saveIdUser(this, data.info.user.id.toString())
                     navigateToMarcacion()
                 }
@@ -157,7 +176,17 @@ class LoginActivity : AppCompatActivity() {
 
                 is StateLogin.Error -> {
                     hideLoading()
+                    binding.tvError.text = viewModel.errorMessage.value
+                    binding.tvError.visibility = View.VISIBLE // Muestra el mensaje de error
                 }
+            }
+        }
+        viewModel.errorMessage.observe(this) { errorMessage ->
+            if (!errorMessage.isNullOrEmpty()) {
+                binding.tvError.text = errorMessage
+                binding.tvError.visibility = View.VISIBLE
+            } else {
+                binding.tvError.visibility = View.GONE
             }
         }
     }

@@ -90,14 +90,15 @@
                 android:textStyle="bold"
                 android:layout_marginBottom="20dp" />
 
-            <Button
-                android:id="@+id/btnMarcacion"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Marcar Asistencia"
-                android:backgroundTint="@color/blue"
-                android:textColor="@color/white"
-                android:textStyle="bold" />
+                        <Button
+                            android:id="@+id/btnCapturePhoto"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Tomar foto"
+                            android:backgroundTint="@color/blue_light"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="20dp" />
 
         </LinearLayout>
     </ScrollView>
@@ -111,10 +112,51 @@
         android:gravity="center"
         android:visibility="gone">
 
-        <ProgressBar
-            android:id="@+id/login_pb_loading"
-            android:layout_width="130dp"
-            android:layout_height="130dp" />
+                        <Button
+                            android:id="@+id/btnFetchName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Obtener nombre"
+                            android:backgroundTint="@color/blue_light"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="20dp" />
 
-    </RelativeLayout>
-</RelativeLayout>
+                        <!-- Ubicación en segundo plano -->
+                        <TextView
+                            android:id="@+id/tvLocation"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Ubicación: ---"
+                            android:textSize="16sp"
+                            android:textColor="@color/black"
+                            android:layout_marginBottom="10dp" />
+
+                        <Button
+                            android:id="@+id/btnGetLocation"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Obtener Ubicación"
+                            android:backgroundTint="@color/blue_light"
+                            android:textColor="@color/white"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+                </ScrollView>
+
+                <!-- Loading (cubre toda la pantalla cuando se muestra) -->
+                <RelativeLayout
+                    android:id="@+id/login_rl_loading"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#61000000"
+                    android:gravity="center"
+                    android:visibility="gone">
+
+                    <ProgressBar
+                        android:id="@+id/login_pb_loading"
+                        android:layout_width="130dp"
+                        android:layout_height="130dp" />
+
+                </RelativeLayout>
+            </RelativeLayout>
