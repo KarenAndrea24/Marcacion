@@ -3,10 +3,9 @@ package com.example.marcacion.ui.marcacion.presenter
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.marcacion.data.dto.model.StateLogin
+import com.example.marcacion.data.dto.model.StateMarcacion
 import com.example.marcacion.data.dto.model.StateSearchDni
-import com.example.marcacion.data.dto.request.LoginRequest
+import com.example.marcacion.data.dto.request.MarcacionRequest
 import com.example.marcacion.data.repository.UserRepository
 import com.example.marcacion.data.utils.Constants
 import kotlinx.coroutines.CoroutineScope
@@ -17,6 +16,9 @@ class MarcacionViewModel(private val repository: UserRepository = UserRepository
 
     private val _data = MutableLiveData<StateSearchDni>()
     val data: LiveData<StateSearchDni> = _data
+
+    private val _data_marcacion = MutableLiveData<StateMarcacion>()
+    val data_marcacion: LiveData<StateMarcacion> = _data_marcacion
 
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
@@ -36,6 +38,37 @@ class MarcacionViewModel(private val repository: UserRepository = UserRepository
             } else {
                 _data.postValue(StateSearchDni.Error(Constants.NETWORK_ERROR))
                 _errorMessage.postValue(Constants.SEARCH_DNI_FAILED)
+            }
+        }
+    }
+
+    fun observerCrearMarcacion(marcacionRequest: MarcacionRequest) {
+        var body = ""
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                _data_marcacion.postValue(StateMarcacion.Loading)
+                val response = repository.observerCrearMarcacion(marcacionRequest)
+                val rawError = response.errorBody()?.string()
+                body = response.body().toString()
+
+                if (response.isSuccessful) {
+                    val rawError = response.errorBody()?.string()
+                    println("DEBUG => Código: ${response.code()}, ErrorBody: $rawError")
+
+                    response.body()?.let {
+                        _data_marcacion.postValue(StateMarcacion.Success(it))
+                        _errorMessage.postValue(null)
+                    } ?: run {
+                        _data_marcacion.postValue(StateMarcacion.Error(Constants.MARCACION_FAILED))
+                        _errorMessage.postValue(Constants.MARCACION_FAILED)
+                    }
+                } else {
+                    _data_marcacion.postValue(StateMarcacion.Error(Constants.NETWORK_ERROR))
+                    _errorMessage.postValue(Constants.MARCACION_FAILED)
+                }
+            } catch (e: Exception) {
+                _data_marcacion.postValue(StateMarcacion.Error(e.message.toString()))
+                _errorMessage.postValue(e.message + " " + body)
             }
         }
     }

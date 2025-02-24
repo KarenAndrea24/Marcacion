@@ -1,8 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-//    id("kotlin-kapt") // Habilitar Kapt para Room
-    id("com.google.devtools.ksp") version "1.8.0-1.0.9" // Agrega esta línea
+    id("com.google.devtools.ksp") version "1.9.0-1.0.11"
 }
 
 android {
@@ -28,27 +27,31 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    viewBinding {
-        enable = true
-    }
-
     kotlinOptions {
         jvmTarget = "17"
+    }
+
+    viewBinding {
+        enable = true
     }
 }
 
 dependencies {
 
+    // Core Android
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -62,11 +65,13 @@ dependencies {
     implementation(libs.camerax.camera2)
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.view)
+    implementation(libs.androidx.exifinterface)
 
     // Room (SQLite) para base de datos local
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-//    kapt(libs.room.compiler) // Importante para generar código Room
+    // Usa KSP en lugar de KAPT para el compilador de Room
+    ksp(libs.room.compiler)
 
     // Corrutinas para ejecución en segundo plano
     implementation(libs.coroutines.android)
@@ -77,17 +82,13 @@ dependencies {
     // Geolocalización (FusedLocationProvider)
     implementation(libs.play.services.location)
 
-    // Testing
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-
     // ViewModel y LiveData para manejar la UI
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.lifecycle.livedata.ktx)
 }
 
 ksp {
+    // Configuración opcional para Room
     arg("room.incremental", "true")
     arg("room.schemaLocation", "$projectDir/schemas")
 }
