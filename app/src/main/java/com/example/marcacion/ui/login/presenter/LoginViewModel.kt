@@ -60,13 +60,8 @@ class LoginViewModel(private val repository: UserRepository = UserRepository()) 
 
             if (response.isSuccessful) {
                 response.body()?.let {
-                    if (it.user != null) {
-                        _data.postValue(StateLogin.Success(it))
-                        _errorMessage.postValue(null)
-                    } else {
-                        _data.postValue(StateLogin.Error(Constants.INVALID_CREDENTIALS_ERROR))
-                        _errorMessage.postValue(Constants.INVALID_CREDENTIALS_ERROR)
-                    }
+                    _data.postValue(StateLogin.Success(it))
+                    _errorMessage.postValue(null)
                 } ?: run {
                     _data.postValue(StateLogin.Error(Constants.GENERAL_ERROR))
                     _errorMessage.postValue(Constants.GENERAL_ERROR)

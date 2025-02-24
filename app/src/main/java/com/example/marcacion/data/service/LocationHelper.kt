@@ -63,11 +63,15 @@ class LocationHelper(
      */
     @SuppressLint("MissingPermission")
     fun startLocationUpdates() {
-        val locationRequest = LocationRequest.create().apply {
-            interval = 10_000  // Cada 10s
-            fastestInterval = 5_000
-            priority = Priority.PRIORITY_HIGH_ACCURACY
-        }
+//        val locationRequest = LocationRequest.create().apply {
+//            interval = 10_000  // Cada 10s
+//            fastestInterval = 5_000
+//            priority = Priority.PRIORITY_HIGH_ACCURACY
+//        }
+
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10_000)
+            .setMinUpdateIntervalMillis(5_000)
+            .build()
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
