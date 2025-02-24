@@ -3,6 +3,7 @@ package com.example.marcacion.ui.marcacion.presenter
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -96,7 +97,6 @@ class MarcacionActivity : AppCompatActivity() {
             if (permissions[Manifest.permission.CAMERA] == true) {
                 startCamera()
             } else {
-                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -122,7 +122,6 @@ class MarcacionActivity : AppCompatActivity() {
                     this, cameraSelector, preview, imageCapture
                 )
             } catch (exc: Exception) {
-                Toast.makeText(this, "Error al iniciar la cámara", Toast.LENGTH_SHORT).show()
             }
         }, ContextCompat.getMainExecutor(this))
     }
@@ -146,7 +145,6 @@ class MarcacionActivity : AppCompatActivity() {
             if (dni.length == 8) {
                 viewModel.obtenerNombrePorDNI(dni)
             } else {
-                Toast.makeText(this, "Ingrese un DNI válido", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -163,9 +161,8 @@ class MarcacionActivity : AppCompatActivity() {
         }
         fechaHoraThread.start()
 
-        // Botón para obtener ubicación
-        binding.btnGetLocation.setOnClickListener {
-            Toast.makeText(this, "Obteniendo ubicación...", Toast.LENGTH_SHORT).show()
+        // Botón para la marcacion con ubicación
+        binding.btnMarcacion.setOnClickListener {
 
             // Pasamos los datos al helper
             locationHelper.dni = dni
@@ -197,7 +194,6 @@ class MarcacionActivity : AppCompatActivity() {
         if (isGranted) {
             locationHelper.checkGPSAndRequestLocation()
         } else {
-            Toast.makeText(this, "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -211,11 +207,7 @@ class MarcacionActivity : AppCompatActivity() {
             outputOptions, ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
-                    Toast.makeText(
-                        this@MarcacionActivity,
-                        "Error al capturar la foto: ${exc.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Log.e("MarcacionActivity", "Error al capturar la foto", exc)
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
@@ -287,7 +279,7 @@ class MarcacionActivity : AppCompatActivity() {
                     }
                     Toast.makeText(
                         this,
-                        "Marcación exitosa " + data.info.status + "MESSAGE: " + data.info.status,
+                        "Marcación exitosa - " + data.info.status + "MESSAGE: " + data.info.message,
                         Toast.LENGTH_SHORT
                     ).show()
                 }

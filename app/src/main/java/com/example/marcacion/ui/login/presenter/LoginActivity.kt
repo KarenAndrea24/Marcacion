@@ -76,7 +76,6 @@ class LoginActivity : AppCompatActivity() {
                         return@registerForActivityResult
                     }
                 }
-                Toast.makeText(this, "Algunos permisos fueron denegados.", Toast.LENGTH_SHORT).show()
             } else {
                 iniciarServicioUbicacion()
             }
@@ -149,7 +148,6 @@ class LoginActivity : AppCompatActivity() {
                 is StateLogin.Success -> {
                     hideLoading()
                     saveIdUser(this, data.info.user.id.toString())
-                    Toast.makeText(this, getIdUser(this) + " PRUEBA ", Toast.LENGTH_SHORT).show()
                     navigateToMarcacion()
                 }
 
