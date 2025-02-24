@@ -162,7 +162,7 @@ class MarcacionActivity : AppCompatActivity() {
         fechaHoraThread.start()
 
         // Botón para la marcacion con ubicación
-        binding.btnGetLocation.setOnClickListener {
+        binding.btnMarcacion.setOnClickListener {
 
             // Pasamos los datos al helper
             locationHelper.dni = dni

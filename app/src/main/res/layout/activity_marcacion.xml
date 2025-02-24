@@ -47,7 +47,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
-                android:backgroundTint="@color/blue"
+                android:backgroundTint="@color/blue_light"
                 android:text="Tomar Foto"
                 android:textColor="@color/white"
                 android:textStyle="bold" />
@@ -82,16 +82,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
-                android:backgroundTint="@color/blue"
+                android:backgroundTint="@color/blue_light"
                 android:text="Obtener Nombre"
                 android:textColor="@color/white"
                 android:textStyle="bold" />
 
             <Button
-                android:id="@+id/btnGetLocation"
+                android:id="@+id/btnMarcacion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/blue_light"
+                android:backgroundTint="@color/blue_indigo"
                 android:text="Marcacion"
                 android:textColor="@color/white"
                 android:textStyle="bold" />

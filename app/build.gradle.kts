@@ -9,7 +9,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.marcacion"
+        applicationId = "com.example.marcacion.test"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
