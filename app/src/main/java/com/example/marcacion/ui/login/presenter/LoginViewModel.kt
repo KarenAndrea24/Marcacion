@@ -37,23 +37,6 @@ class LoginViewModel(private val repository: UserRepository = UserRepository()) 
                 return
             }
         }
-//        CoroutineScope(Dispatchers.IO).launch {
-//            _data.postValue(StateLogin.Loading)
-//            val response = repository.login(LoginRequest(email, password))
-//
-//            if (response.isSuccessful) {
-//                response.body()?.let {
-//                    _data.postValue(StateLogin.Success(it))
-//                    _errorMessage.postValue(null)
-//                } ?: {
-//                    _data.postValue(StateLogin.Error(Constants.LOGIN_FAILED))
-//                    _errorMessage.postValue(Constants.LOGIN_FAILED)
-//                }
-//            } else {
-//                _data.postValue(StateLogin.Error(Constants.NETWORK_ERROR))
-//                _errorMessage.postValue(Constants.LOGIN_FAILED)
-//            }
-//        }
         CoroutineScope(Dispatchers.IO).launch {
             _data.postValue(StateLogin.Loading)
             val response = repository.login(LoginRequest(email, password))

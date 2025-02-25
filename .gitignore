@@ -1,17 +1,42 @@
+#*.iml
+#.gradle
+#/local.properties
+#/.idea/caches
+#/.idea/libraries
+#/.idea/modules.xml
+#/.idea/workspace.xml
+#/.idea/navEditor.xml
+#/.idea/assetWizardSettings.xml
+#.DS_Store
+#/build
+#/captures
+#.externalNativeBuild
+#.cxx
+#local.properties
+#.idea
+#.idea
+
+# Archivos de configuración específicos del entorno
 *.iml
-.gradle
 /local.properties
+/.DS_Store
+
+# Configuración de Android Studio y Gradle
+.gradle
+.idea/
+.idea/**
+
+# Cachés y archivos generados automáticamente por Android Studio
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
-.idea
-.idea
+
+# Archivos de compilación y salida
+/build/
+.cxx/
+.externalNativeBuild/
+captures/
+
