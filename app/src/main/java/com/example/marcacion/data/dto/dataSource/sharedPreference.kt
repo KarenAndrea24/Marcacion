@@ -2,7 +2,7 @@ package com.example.marcacion.data.dto.dataSource
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.example.marcacion.data.utils.Constants.ID_USER
+import com.example.marcacion.data.utils.Constants.ID_MARCACION_USER
 
 fun saveIdUser(context: Context, token: String?) {
 
@@ -11,7 +11,7 @@ fun saveIdUser(context: Context, token: String?) {
 
     val editor: SharedPreferences.Editor = sharedPreferences.edit()
 
-    editor.putString(ID_USER, token)
+    editor.putString(ID_MARCACION_USER, token)
 
     editor.apply()
 }
@@ -21,5 +21,5 @@ fun getIdUser(context: Context): String? {
     val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("userPreferences", Context.MODE_PRIVATE)
 
-    return sharedPreferences.getString(ID_USER, null)
+    return sharedPreferences.getString(ID_MARCACION_USER, null)
 }

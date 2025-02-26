@@ -246,6 +246,8 @@ class MarcacionActivity : AppCompatActivity() {
         )
     }
 
+    private var idUserMarcado: String = ""
+
     private fun observerBuscarDNI() {
         viewModel.data.observe(this) { data ->
             when (data) {
@@ -253,6 +255,8 @@ class MarcacionActivity : AppCompatActivity() {
                     hideLoading()
                     nombre = data.info.data.name
                     binding.tvUserName.text = "Nombre: ${data.info.data.name}"
+
+                    idUserMarcado = data.info.data.id.toString()
                 }
 
                 is StateSearchDni.Loading -> {

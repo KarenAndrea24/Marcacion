@@ -45,8 +45,10 @@ class MarcacioneSyncWorker(
                 pendientes.forEach { marcacion ->
                     val marcacionRequest = getIdUser(applicationContext)?.let {
                         MarcacionRequest(
-                            idUser = it,
-                            idMarcacionUser = marcacion.id.toString(),
+//                            idUser = it,
+//                            idMarcacionUser = marcacion.id.toString(),
+                            idUser = marcacion.id.toString(),
+                            idMarcacionUser = it,
                             tipoMarcacion = "entrada", // Ajusta esto según sea necesario
                             fechaHora = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(
                                 Date()

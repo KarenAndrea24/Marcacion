@@ -7,6 +7,7 @@ import com.example.marcacion.data.dto.response.MarcacionResponse
 import com.example.marcacion.data.dto.response.SearchDniResponse
 import com.example.marcacion.data.utils.Constants
 import com.google.gson.GsonBuilder
+import okhttp3.OkHttpClient
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -15,9 +16,18 @@ import retrofit2.create
 class UserServiceImp {
     private val gson = GsonBuilder().setLenient().create()
 
+    private val interceptor = OkHttpClient.Builder().addInterceptor { chain ->
+        val request = chain.request().newBuilder()
+            .addHeader("Accept", "application/json")
+            .build()
+        chain.proceed(request)
+    }.build()
+
+    //todo: probar
     private val retrofit = Retrofit.Builder()
         .baseUrl(Constants.API_BASE_URL)
         .addConverterFactory(GsonConverterFactory.create(gson))
+        .client(interceptor)
         .build()
 
     private val service = retrofit.create<UserService>()

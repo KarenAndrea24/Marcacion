@@ -13,5 +13,6 @@ object Constants {
     const val INVALID_DNI_ERROR = "El DNI debe tener 8 dígitos"
     const val MARCACION_FAILED = "Error en la marcación!"
     const val API_BASE_URL = "https://smcp.smfoods.com.pe"
-    const val ID_USER = "ID_USER"
+//    const val ID_USER = "ID_USER"
+    const val ID_MARCACION_USER = "ID_MARCACION_USER"
 }

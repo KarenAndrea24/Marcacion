@@ -35,6 +35,7 @@ class LocationHelper(
     var dni: String = ""
     var nombre: String = ""
     var base64String: String = ""
+    var idUserMarcado: String = ""
 
     /**
      * Verifica si el GPS está activado. Si no lo está, abre la configuración para que el usuario
@@ -63,12 +64,6 @@ class LocationHelper(
      */
     @SuppressLint("MissingPermission")
     fun startLocationUpdates() {
-//        val locationRequest = LocationRequest.create().apply {
-//            interval = 10_000  // Cada 10s
-//            fastestInterval = 5_000
-//            priority = Priority.PRIORITY_HIGH_ACCURACY
-//        }
-
         val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10_000)
             .setMinUpdateIntervalMillis(5_000)
             .build()
@@ -94,10 +89,13 @@ class LocationHelper(
                     if (insertedId > 0) {
                         // Inserción exitosa
                         Log.d("LocationHelper", "Marcación insertada con ID: $insertedId")
+
                         val marcacionRequest = getIdUser(context)?.let {
                             MarcacionRequest(
-                                idUser = it,
-                                idMarcacionUser = "13",
+//                                idUser = it,
+//                                idMarcacionUser = "13",
+                                idUser = idUserMarcado,
+                                idMarcacionUser = it,
                                 tipoMarcacion = "entrada",
                                 fechaHora = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(
                                     Date()
