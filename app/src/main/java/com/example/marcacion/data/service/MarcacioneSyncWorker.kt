@@ -47,12 +47,10 @@ class MarcacioneSyncWorker(
                         MarcacionRequest(
 //                            idUser = it,
 //                            idMarcacionUser = marcacion.id.toString(),
-                            idUser = marcacion.id.toString(),
+                            idUser = marcacion.idUserMarcado,
                             idMarcacionUser = it,
                             tipoMarcacion = "entrada", // Ajusta esto según sea necesario
-                            fechaHora = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(
-                                Date()
-                            ),
+                            fechaHora = marcacion.fechaHora,
                             foto = "", // Ajusta esto según sea necesario
                             latitud = marcacion.latitud.toString(),
                             longitud = marcacion.longitud.toString()
