@@ -45,11 +45,9 @@ class MarcacioneSyncWorker(
                 pendientes.forEach { marcacion ->
                     val marcacionRequest = getIdUser(applicationContext)?.let {
                         MarcacionRequest(
-//                            idUser = it,
-//                            idMarcacionUser = marcacion.id.toString(),
                             idUser = marcacion.idUserMarcado,
                             idMarcacionUser = it,
-                            tipoMarcacion = "entrada", // Ajusta esto según sea necesario
+                            tipoMarcacion = marcacion.tipoMarcacion,
                             fechaHora = marcacion.fechaHora,
                             foto = "", // Ajusta esto según sea necesario
                             latitud = marcacion.latitud.toString(),

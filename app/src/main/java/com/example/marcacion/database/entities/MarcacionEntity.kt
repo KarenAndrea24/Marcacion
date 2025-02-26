@@ -11,5 +11,6 @@ data class MarcacionEntity(
     val latitud: Double,
     val longitud: Double,
     val fechaHora: String, // Fecha y hora de la marcación
+    val tipoMarcacion: String, // Entrada o Salida
     val estado: Int // 0: Pendiente, 1: Sincronizado
 )

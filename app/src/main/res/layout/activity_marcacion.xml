@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/white">
 
     <ScrollView
@@ -20,43 +21,71 @@
                 android:id="@+id/tvDateTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="15dp"
                 android:textColor="@color/black"
+                android:textSize="17sp"
                 android:textStyle="bold" />
 
-            <!-- Vista previa de la cámara con SafePreviewView -->
-            <com.example.marcacion.customview.SafePreviewView
-                android:id="@+id/previewView"
+            <!-- Sección de la Cámara con Botón de Volteo -->
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_marginBottom="10dp"
-                tools:background="@drawable/ic_camera" />
+                android:layout_height="250dp"
+                android:layout_marginBottom="15dp">
 
-            <!-- Captura de Foto -->
+                <!-- Vista previa de la cámara -->
+                <com.example.marcacion.customview.SafePreviewView
+                    android:id="@+id/previewView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/black" />
+
+                <!-- Botón de Voltear Cámara -->
+                <ImageButton
+                    android:id="@+id/btnSwitchCamera"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_margin="10dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentTop="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_flip_camera"
+                    app:tint="@color/white"
+                    android:contentDescription="Cambiar cámara" />
+            </RelativeLayout>
+
+            <!-- Imagen Capturada -->
             <ImageView
                 android:id="@+id/imgPhoto"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
-                android:layout_marginBottom="10dp"
+                android:layout_width="250dp"
+                android:layout_height="250dp"
                 android:background="@drawable/custom_input"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_camera" />
+                android:src="@drawable/ic_camera"
+                android:layout_marginBottom="10dp"/>
 
-            <Button
+            <!-- Botón Tomar Foto (Texto en Azul) -->
+            <TextView
                 android:id="@+id/btnCapturePhoto"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Tomar foto"
+                android:textSize="16sp"
+                android:textColor="@color/blue_light"
+                android:textStyle="bold"
                 android:layout_marginBottom="20dp"
-                android:backgroundTint="@color/blue_light"
-                android:text="Tomar Foto"
-                android:textColor="@color/white"
-                android:textStyle="bold" />
+                android:clickable="true"
+                android:focusable="true"
+                android:minHeight="48dp"
+                android:padding="13dp"
+                android:background="@drawable/btn_textview_background"
+                android:gravity="center"/>
 
             <!-- Campo para DNI -->
             <EditText
                 android:id="@+id/etDNI"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
                 android:layout_marginBottom="10dp"
                 android:background="@drawable/custom_input"
                 android:drawableStart="@drawable/ic_person"
@@ -77,25 +106,40 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
+            <!-- Botón Obtener Nombre -->
             <Button
                 android:id="@+id/btnFetchName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="15dp"
                 android:backgroundTint="@color/blue_light"
-                android:text="Obtener Nombre"
+                android:text="Obtener nombre"
                 android:textColor="@color/white"
                 android:textStyle="bold" />
 
+            <!-- Spinner para seleccionar tipo de marcación -->
+            <Spinner
+                android:id="@+id/spTipoMarcacion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:background="@drawable/custom_input"
+                android:minHeight="48dp"
+                android:padding="10dp"
+                android:textColor="@color/black"
+                android:textColorHint="@color/gray"
+                android:popupBackground="@color/white"/>
+
+            <!-- Botón de Marcación -->
             <Button
                 android:id="@+id/btnMarcacion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/blue_indigo"
-                android:text="Marcacion"
+                android:backgroundTint="@color/blue_light"
+                android:text="Registrar marcación"
                 android:textColor="@color/white"
-                android:textStyle="bold" />
-
+                android:textStyle="bold"
+                android:layout_marginTop="10dp" />
         </LinearLayout>
     </ScrollView>
 

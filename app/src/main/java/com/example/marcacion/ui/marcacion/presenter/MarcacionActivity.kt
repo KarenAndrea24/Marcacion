@@ -1,10 +1,13 @@
 package com.example.marcacion.ui.marcacion.presenter
 
 import android.Manifest
+import android.R
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -44,6 +47,7 @@ class MarcacionActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMarcacionBinding
     private val viewModel by viewModels<MarcacionViewModel>()
     private var imageCapture: ImageCapture? = null
+    private var useFrontCamera = false
 
     // Base de datos y DAO
     private lateinit var db: MarcacionDatabase
@@ -54,6 +58,8 @@ class MarcacionActivity : AppCompatActivity() {
 
     private lateinit var nombre: String
     private lateinit var dni: String
+    private lateinit var tipoMarcacionSeleccionado: String
+    private var idUserMarcado: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,7 +115,14 @@ class MarcacionActivity : AppCompatActivity() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
-            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+
+//          val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+            val cameraSelector = if (useFrontCamera) {
+                CameraSelector.DEFAULT_FRONT_CAMERA
+            } else {
+                CameraSelector.DEFAULT_BACK_CAMERA
+            }
+
             imageCapture = ImageCapture.Builder().build()
 
             val preview = Preview.Builder().build().also {
@@ -122,6 +135,7 @@ class MarcacionActivity : AppCompatActivity() {
                     this, cameraSelector, preview, imageCapture
                 )
             } catch (exc: Exception) {
+                Log.e("MarcacionActivity", "Error al inicializar la cámara", exc)
             }
         }, ContextCompat.getMainExecutor(this))
     }
@@ -132,6 +146,11 @@ class MarcacionActivity : AppCompatActivity() {
             startCamera()
         } else {
             requestPermissions.launch(arrayOf(Manifest.permission.CAMERA))
+        }
+        // Botón para alternar entre cámaras
+        binding.btnSwitchCamera.setOnClickListener {
+            useFrontCamera = !useFrontCamera
+            startCamera() // Reinicia la cámara con la nueva selección
         }
 
         // Botón para capturar foto
@@ -161,12 +180,30 @@ class MarcacionActivity : AppCompatActivity() {
         }
         fechaHoraThread.start()
 
+        // Configurar opciones del Spinner
+        val opciones = listOf("Entrada", "Salida")
+        val adapter = ArrayAdapter(this, R.layout.simple_spinner_item, opciones)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spTipoMarcacion.adapter = adapter
+
+        // Escuchar selección del usuario
+        binding.spTipoMarcacion.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                tipoMarcacionSeleccionado = opciones[position].lowercase() // "entrada" o "salida"
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+
+
         // Botón para la marcacion con ubicación
         binding.btnMarcacion.setOnClickListener {
 
             // Pasamos los datos al helper
             locationHelper.dni = dni
             locationHelper.nombre = nombre
+            locationHelper.idUserMarcado = idUserMarcado
+            locationHelper.tipoMarcacion = tipoMarcacionSeleccionado // Enviar selección
 
             // Primero revisamos permisos de ubicación
             checkLocationPermissions()
@@ -246,15 +283,14 @@ class MarcacionActivity : AppCompatActivity() {
         )
     }
 
-    private var idUserMarcado: String = ""
-
     private fun observerBuscarDNI() {
         viewModel.data.observe(this) { data ->
             when (data) {
                 is StateSearchDni.Success -> {
                     hideLoading()
-                    nombre = data.info.data.name
-                    binding.tvUserName.text = "Nombre: ${data.info.data.name}"
+//                    nombre = data.info.data.name
+                    nombre = "${data.info.data.name} ${data.info.data.lastNameFather} ${data.info.data.lastNameMother ?: ""}".trim()
+                    binding.tvUserName.text = "Nombre: $nombre"
 
                     idUserMarcado = data.info.data.id.toString()
                 }
@@ -283,7 +319,8 @@ class MarcacionActivity : AppCompatActivity() {
                     }
                     Toast.makeText(
                         this,
-                        "Marcación exitosa - " + data.info.status + "MESSAGE: " + data.info.message,
+//                        "Marcación exitosa - " + data.info.status + "MESSAGE: " + data.info.message,
+                        "Marcación exitosa: ${data.info.message}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -294,6 +331,9 @@ class MarcacionActivity : AppCompatActivity() {
 
                 is StateMarcacion.Error -> {
                     hideLoading()
+                    Log.e("MarcacionActivity", "Error en la marcación: ${viewModel.errorMessage.value}")
+
+                    Toast.makeText(this, "Error: ${data.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }

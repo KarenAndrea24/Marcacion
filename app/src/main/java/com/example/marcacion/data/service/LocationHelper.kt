@@ -36,6 +36,7 @@ class LocationHelper(
     var nombre: String = ""
     var base64String: String = ""
     var idUserMarcado: String = ""
+    var tipoMarcacion: String = "entrada" // Por defecto
 
     /**
      * Verifica si el GPS está activado. Si no lo está, abre la configuración para que el usuario
@@ -78,9 +79,12 @@ class LocationHelper(
                     val insertedId = dao.insertarMarcacion(
                         MarcacionEntity(
                             dni = dni,
+                            idUserMarcado = idUserMarcado, // usuario marcado
                             nombre = nombre,
                             latitud = location.latitude,
                             longitud = location.longitude,
+                            fechaHora = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date()),
+                            tipoMarcacion = tipoMarcacion,
                             estado = 0
                         )
                     )
@@ -89,17 +93,14 @@ class LocationHelper(
                     if (insertedId > 0) {
                         // Inserción exitosa
                         Log.d("LocationHelper", "Marcación insertada con ID: $insertedId")
+                        Log.d("LocationHelper", "Datos de marcación: idUserMarcado=$idUserMarcado, idMarcacionUser=${getIdUser(context)}, idMarcacionUser=$tipoMarcacion")
 
                         val marcacionRequest = getIdUser(context)?.let {
                             MarcacionRequest(
-//                                idUser = it,
-//                                idMarcacionUser = "13",
                                 idUser = idUserMarcado,
                                 idMarcacionUser = it,
-                                tipoMarcacion = "entrada",
-                                fechaHora = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(
-                                    Date()
-                                ),
+                                tipoMarcacion = tipoMarcacion,
+                                fechaHora = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date()),
                                 foto = base64String,
                                 latitud = location.latitude.toString(),
                                 longitud = location.longitude.toString()
