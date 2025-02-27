@@ -1,8 +1,13 @@
 package com.example.marcacion.ui.marcacion.presenter
 
 import android.Manifest
-import android.R
+//noinspection SuspiciousImport
+import android.R as AndroidR
+import com.example.marcacion.R
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -11,6 +16,7 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -23,6 +29,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.marcacion.data.dto.model.StateMarcacion
@@ -61,6 +68,7 @@ class MarcacionActivity : AppCompatActivity() {
     private lateinit var tipoMarcacionSeleccionado: String
     private var idUserMarcado: String = ""
 
+    @SuppressLint("ServiceCast")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMarcacionBinding.inflate(layoutInflater)
@@ -83,19 +91,26 @@ class MarcacionActivity : AppCompatActivity() {
             .build()
 
         // Configura WorkManager para sincronización periódica
-        val workRequest = PeriodicWorkRequestBuilder<MarcacioneSyncWorker>(
-            15, // Mínimo 15 minutos
-            TimeUnit.MINUTES
-        )
+//        val workRequest = PeriodicWorkRequestBuilder<MarcacioneSyncWorker>(
+////            15, // Mínimo 15 minutos
+//            1, // Mínimo 1 minuto
+//            TimeUnit.MINUTES
+//        )
+//            .setConstraints(constraints)
+//            .build()
+//
+//        WorkManager.getInstance(applicationContext)
+//            .enqueueUniquePeriodicWork(
+//                "MarcacionSyncWork",
+//                ExistingPeriodicWorkPolicy.KEEP,
+//                workRequest
+//            )
+
+        val workRequest = OneTimeWorkRequestBuilder<MarcacioneSyncWorker>()
             .setConstraints(constraints)
             .build()
+        WorkManager.getInstance(applicationContext).enqueue(workRequest)
 
-        WorkManager.getInstance(applicationContext)
-            .enqueueUniquePeriodicWork(
-                "MarcacionSyncWork",
-                ExistingPeriodicWorkPolicy.KEEP,
-                workRequest
-            )
     }
 
     private val requestPermissions =
@@ -182,7 +197,7 @@ class MarcacionActivity : AppCompatActivity() {
 
         // Configurar opciones del Spinner
         val opciones = listOf("Entrada", "Salida")
-        val adapter = ArrayAdapter(this, R.layout.simple_spinner_item, opciones)
+        val adapter = ArrayAdapter(this, AndroidR.layout.simple_spinner_item, opciones)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spTipoMarcacion.adapter = adapter
 
@@ -317,12 +332,15 @@ class MarcacionActivity : AppCompatActivity() {
                     lifecycleScope.launch(Dispatchers.IO) {
                         dao.updateEstadoMarcacion()
                     }
-                    Toast.makeText(
-                        this,
-//                        "Marcación exitosa - " + data.info.status + "MESSAGE: " + data.info.message,
-                        "Marcación exitosa: ${data.info.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+//                    Toast.makeText(
+//                        this,
+//                        "Marcación exitosa: ${data.info.message}",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
+                    mostrarAlertaConIcono("Éxito", "Marcación registrada: ${data.info.message}", true)
+
+
+                    limpiarCampos()
                 }
 
                 is StateMarcacion.Loading -> {
@@ -333,10 +351,29 @@ class MarcacionActivity : AppCompatActivity() {
                     hideLoading()
                     Log.e("MarcacionActivity", "Error en la marcación: ${viewModel.errorMessage.value}")
 
-                    Toast.makeText(this, "Error: ${data.message}", Toast.LENGTH_LONG).show()
+//                    Toast.makeText(this, "Error: ${data.message}", Toast.LENGTH_LONG).show()
+                    mostrarAlertaConIcono("Error", data.message, false)
                 }
             }
         }
+    }
+
+    private fun limpiarCampos() {
+        binding.etDNI.text.clear()
+        binding.tvUserName.text = "Nombre: ---"
+        binding.imgPhoto.setImageResource(R.drawable.ic_camera)
+
+        // Restablecer el spinner a la opción por defecto
+        binding.spTipoMarcacion.setSelection(0)
+
+        // Reiniciar datos en `LocationHelper`
+        locationHelper.dni = ""
+        locationHelper.nombre = ""
+        locationHelper.base64String = ""
+        locationHelper.idUserMarcado = ""
+        locationHelper.tipoMarcacion = "entrada"
+
+        Log.d("MarcacionActivity", "Campos limpiados para una nueva marcación.")
     }
 
     private fun showLoading() {
@@ -352,4 +389,23 @@ class MarcacionActivity : AppCompatActivity() {
         // Detener las actualizaciones de ubicación (si están en curso)
         locationHelper.stopLocationUpdates()
     }
+
+
+    fun mostrarAlertaConIcono(titulo: String, mensaje: String, esExito: Boolean) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(titulo)
+        builder.setMessage(mensaje)
+
+        // Agregar ícono según el tipo de mensaje
+        val icono = if (esExito) R.drawable.ic_success else R.drawable.ic_error
+        builder.setIcon(icono)
+
+        builder.setPositiveButton("OK") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        val dialog = builder.create()
+        dialog.show()
+    }
+
 }

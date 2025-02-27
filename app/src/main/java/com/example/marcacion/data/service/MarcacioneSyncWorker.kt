@@ -1,6 +1,7 @@
 package com.example.marcacion.data.service
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.marcacion.data.dto.dataSource.getIdUser
@@ -38,8 +39,11 @@ class MarcacioneSyncWorker(
     override suspend fun doWork(): Result {
         return withContext(Dispatchers.IO) {
             try {
+                Log.d("WorkManagerTest", "Iniciando sincronización de marcaciones...")
+
                 // 1. Buscar todas las marcaciones con estado=0 (pendientes)
                 val pendientes = dao.obtenerPendientes() // SELECT * FROM marcaciones WHERE estado=0
+                Log.d("WorkManagerTest", "Marcaciones pendientes encontradas: ${pendientes.size}")
 
                 // 2. Intentar sincronizar cada una con el servidor
                 pendientes.forEach { marcacion ->
@@ -58,17 +62,21 @@ class MarcacioneSyncWorker(
                         val response = repository.observerCrearMarcacion(marcacionRequest)
                         // Si fue exitosa la sincronización, actualiza estado=1
                         if (response.isSuccessful) {
-                            // Actualiza en la BD
-                            dao.actualizarEstado(marcacion.id) // Por ejemplo, un método que ponga estado=1
+                            dao.actualizarEstado(marcacion.id) // Cambia estado=1
+                            Log.d("WorkManagerTest", "Marcación sincronizada con éxito: ${marcacion.id}")
+                        } else {
+                            Log.e("WorkManagerTest", "Error al sincronizar la marcación ${marcacion.id}")
                         }
                     }
                 }
 
                 // 3. Si todo va bien, retornamos success
+                Log.d("WorkManagerTest", "Finalizó la sincronización")
                 Result.success()
 
             } catch (e: Exception) {
                 // Si algo falla, WorkManager puede reintentar
+                Log.e("WorkManagerTest", "Error en WorkManager: ${e.message}")
                 Result.retry()
             }
         }
